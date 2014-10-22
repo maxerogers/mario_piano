@@ -1,51 +1,227 @@
 <!DOCTYPE html>
 <html>
+<head>
+</head>
+<style>
+  body{
+    background-image: url("http://us.cdn001.fansshare.com/photos/supermarioworld/super-mario-games-background-1368298218.jpg");
+    background-size: cover;
+  }
+  .container{
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 800px;
+  }
+  canvas {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 800px;
+    background-color: white;
+}
+.title{
+  float:right;
+font-size:100px;
+color:white;
+}
+</style>
 <body>
+  <div class="container">
+    <img src="http://upload.wikimedia.org/wikipedia/en/archive/7/7d/20140615221735!Mario_Series_Logo.PNG" width="400" height="200">
+    <h1 class="title"> Piano!!</h1>
+  </div>
 <canvas id="myCanvas" width="800" height="400" style="border:1px solid #c3c3c3;">
 Your browser does not support the HTML5 canvas tag.
 </canvas>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/ocanvas/2.7.3/ocanvas.min.js"></script>
-<script>
-var audioContext; //audio context
-var buf; //audio buffer
+<img src="plus-4-256.png" id="0" style="display:none;">
+<img src="piano-icon-614x460.png" id="1" style="display:none;">
+<img src="minus-4-256.png" id="2" style="display:none;">
+<img src="plus-4-256.png" id="3" style="display:none;">
+<img src="drum.png" id="4" style="display:none;">
+<img src="minus-4-256.png" id="5" style="display:none;">
 
-//play the loaded file
-function play() {
-    //create a source node from the buffer
-    var src = audioContext.createBufferSource();
-    src.buffer = buf;
-    //connect to the final output node (the speakers)
-    src.connect(audioContext.destination);
-    //play immediately
-    src.noteOn(0);
-}
+<script src="oCanvas.min.js"></script>
+<script>
+
+var piano_keys;
+var drums;
+// Fix up for prefixing
+window.AudioContext = window.AudioContext||window.webkitAudioContext;
+var audioContext = new AudioContext();
+var source;
+var pianoVolumeNode = audioContext.createGain();
+var drumVolumeNode = audioContext.createGain();
+var filter;
+var destination;
+var filter_number = 1;
+var drum_number = 0;
+
+//Load the drums
+
+//Load the keys
+//Mario Jump is a A4(432.352 Hz)
+var key_buffers = [];
+var drum_buffers = [];
 
 //load and decode mp3 file
-function loadFile() {
+var index = 0;
+function loadFile(url,index) {
     var req = new XMLHttpRequest();
-    req.open("GET","smb_jump-small.wav",true);
+    req.open("GET",url,true);
     req.responseType = "arraybuffer";
     req.onload = function() {
         //decode the loaded data
         audioContext.decodeAudioData(req.response, function(buffer) {
-            buf = buffer;
-            play();
+            key_buffers[index] = buffer;
+            //play();
+        });
+    };
+    req.send();
+}
+function loadDrum(url,index) {
+    var req = new XMLHttpRequest();
+    req.open("GET",url,true);
+    req.responseType = "arraybuffer";
+    req.onload = function() {
+        //decode the loaded data
+        audioContext.decodeAudioData(req.response, function(buffer) {
+        drum_buffers[index] = buffer;
+            //play();
         });
     };
     req.send();
 }
 
-//init the sound system
-function init() {
-    console.log("in init");
-    try {
-        audioContext =  new (window.AudioContext || window.webkitAudioContext)(); //is there a better API for this?
-        loadFile();
-    } catch(e) {
-        alert('you need webaudio support');
-    }
+loadDrum("looperman-l-0262259-0047670-califken-mario-bros-level-14-beat.wav",1);
+loadDrum("mario_drum1.wav",2);
+
+
+function play(key){
+  source = audioContext.createBufferSource();
+  source.buffer = key_buffers[key];
+  if(filter_number === 0){
+    source.connect(pianoVolumeNode);
+  }else if(filter_number === 1){
+    var filter = audioContext.createBiquadFilter();
+    source.connect(filter);
+    filter.connect(pianoVolumeNode);
+    filter.frequency.value = 200;
+    filter.type = 2;
+  }else if(filter_number === 2){
+    var filter = audioContext.createBiquadFilter();
+    source.connect(filter);
+    filter.connect(pianoVolumeNode);
+    filter.frequency.value = 200;
+    filter.type = 0;
+  }else if(filter_number === 3){
+    var filter = audioContext.createBiquadFilter();
+    source.connect(filter);
+    filter.connect(pianoVolumeNode);
+    filter.frequency.value = 200;
+    filter.type = 4;
+  }else if(filter_number === 4){
+    var filter = audioContext.createBiquadFilter();
+    source.connect(filter);
+    filter.connect(pianoVolumeNode);
+    filter.frequency.value = 200;
+    filter.type = 5;
+  }
+  pianoVolumeNode.connect(audioContext.destination);
+  source.start(0);
 }
-window.addEventListener('load',init,false);
+
+//Loading Keys
+loadFile("mario_c0.wav",index);
+index++;
+loadFile("mario_d0.wav",index);
+index++;
+loadFile("mario_e0.wav",index);
+index++;
+loadFile("mario_f0.wav",index);
+index++;
+loadFile("mario_g0.wav",index);
+index++;
+loadFile("mario_a1.wav",index);
+index++;
+loadFile("mario_b1.wav",index);
+index++;
+loadFile("mario_c1.wav",index);
+index++;
+loadFile("mario_d1.wav",index);
+index++;
+loadFile("mario_e1.wav",index);
+index++;
+loadFile("mario_f1.wav",index);
+index++;
+loadFile("mario_g1.wav",index);
+index++;
+loadFile("mario_a2.wav",index);
+index++;
+loadFile("mario_b2.wav",index);
+index++;
+loadFile("mario_c2.wav",index);
+index++;
+
+//Piano Keys from Keyboard
+window.onkeypress=function(e){
+  console.log(e.keyCode);
+  switch(e.keyCode){
+    case 113:
+      key_play(0);
+      break;
+    case 119:
+      key_play(1);
+      break;
+    case 101:
+      key_play(2);
+      break;
+    case 114:
+      key_play(3);
+      break;
+    case 117:
+      key_play(4);
+      break;
+    case 105:
+      key_play(5);
+      break;
+    case 111:
+      key_play(6);
+      break;
+    case 112:
+      key_play(7);
+      break;
+    case 97:
+      key_play(8);
+      break;
+    case 115:
+      key_play(9);
+      break;
+    case 100:
+      key_play(10);
+      break;
+    case 102:
+      key_play(11);
+      break;
+    case 106:
+      key_play(12);
+      break;
+    case 107:
+      key_play(13);
+      break;
+    case 108:
+      key_play(14);
+      break;
+    default:
+      console.log("idk that key bro. Try 1234567890");
+  }
+};
+
+//Drawing the Canvas
 
 var c=document.getElementById("myCanvas");
 var ctx=c.getContext("2d");
@@ -54,6 +230,40 @@ var canvas = oCanvas.create({
   canvas: "#myCanvas",
   fps: 60
 });
+
+function drawIcons(){
+  for(i=0;i<6;i++){
+    var img=document.getElementById(""+i);
+    ctx.drawImage(img,50*i+(50/2.2),325,50,50);
+  }
+  for(i=6;i<12;i++){
+    ctx.font="20px Georgia";
+    var label_str = "";
+    switch(i){
+      case 6:
+        label_str = "D1";
+        break;
+      case 7:
+        label_str = "D2";
+        break;
+      case 8:
+        label_str = "F1";
+        break;
+      case 9:
+        label_str = "F2";
+        break;
+      case 10:
+        label_str = "F3";
+        break;
+      case 11:
+        label_str = "F4";
+        break;
+      default:
+        label_str = "";
+    }
+    ctx.fillText(label_str,50*i+35,355);
+  }
+}
 
 function drawKeyLetters(){
   ctx.font="20px Georgia";
@@ -66,9 +276,96 @@ function drawKeyLetters(){
       ctx.fillText(String.fromCharCode('A'.charCodeAt(0) + (i-12)).toString(),50*i+40,275);
     }
   }
+  drawIcons();
+  drawKeys();
 }
 
+function drawKeys(){
+  ctx.font="20px Georgia";
+  for(i=0;i<15;i++){
+    str = "";
+    switch(i){
+      case 0:
+        str = "q";
+        break;
+      case 1:
+          str = "w";
+          break;
+      case 2:
+        str = "e";
+        break;
+      case 3:
+        str = "r";
+        break;
+      case 4:
+        str = "u";
+        break;
+      case 5:
+        str = "i";
+        break;
+      case 6:
+        str = "o";
+        break;
+      case 7:
+        str = "p";
+        break;
+      case 8:
+        str = "a";
+        break;
+      case 9:
+        str = "s";
+        break;
+      case 10:
+        str = "d";
+        break;
+      case 11:
+        str = "f";
+        break;
+      case 12:
+        str = "j";
+        break;
+      case 13:
+        str = "k";
+        break;
+      case 14:
+        str = "l";
+        break;
+    }
+    ctx.fillText(str,50*i+40,25);
+  }
+}
+
+//Middle Nodes
+function volumeUp(){
+  pianoVolumeNode.gain.value *= 1.5;
+}
+function volumeDown(){
+  pianoVolumeNode.gain.value *= 0.5;
+}
+function drumVolumeUp(){
+  drumVolumeNode.gain.value *= 1.5;
+}
+function drumVolumeDown(){
+  drumVolumeNode.gain.value *= 0.5;
+}
+
+
 var buttons = [];
+
+function key_play(key_number){
+  //console.log("PLAY: "+key_number);
+  buttons[key_number].fill = "hsl(" + Math.random() * 360 + ", 50%, 50%)";
+  canvas.redraw();
+  drawKeyLetters()
+  play(buttons[key_number].key_number);
+  //console.log(key_number);
+  //console.log(buttons[key_number].key_number);
+  setTimeout(function(){
+    buttons[key_number].fill = "white";
+    canvas.redraw();
+    drawKeyLetters()
+  },300);
+}
 
 for(i=0;i<15;i++){
   var button = canvas.display.rectangle({
@@ -83,21 +380,115 @@ for(i=0;i<15;i++){
   button.key_number = i;
   canvas.addChild(button);
   buttons.push(button);
-  //console.log(button);
   button.bind("click tap",function(){
-    console.log("PLAY: "+this.key_number);
-    this.fill = "hsl(" + Math.random() * 360 + ", 50%, 50%)";
-    canvas.redraw();
-    drawKeyLetters()
-    var button = this;
-    play();
-    setTimeout(function(){
-      button.fill = "white";
-      canvas.redraw();
-      drawKeyLetters()
-    },300);
+    key_play(this.key_number);
   });
 }
+var settings_buttons = [];
+for(i=0;i<12;i++){
+  var button = canvas.display.rectangle({
+    x: 50*i+50,
+    y: 325,
+    origin: {x: "center", y: "top"},
+    width: 50,
+    height: 50,
+    fill: "white",
+    stroke: "outside 5px rgba(0,0,0,1)"
+  });
+  button.button_num = i;
+  settings_buttons.push(button);
+  button_num = i;
+  canvas.addChild(button);
+  button.bind("click tap",function(){
+    switch(this.button_num){
+      case 0:
+        volumeUp();
+        break;
+      case 1:
+        volumeDown();
+        break;
+      case 2:
+        drumVolumeUp();
+        break;
+      case 3:
+        drumVolumeDown();
+        break;
+      case 6:
+        if(drum_number == 0 || drum_number == 2){
+          drum_number = 1;
+        }else{
+          drum_number = 0;
+        }
+        break;
+      case 7:
+        if(drum_number == 0 || drum_number == 1){
+          drum_number = 2;
+        }else{
+          drum_number = 0;
+        }
+        break;
+      case 9:
+        if(filter_number === 0){
+          filter_number = 2;
+        }else{
+          filter_number = 0;
+        }
+        break;
+      case 8:
+        if(filter_number === 0){
+          filter_number = 1;
+        }else{
+          filter_number = 0;
+        }
+        break;
+      case 10:
+        if(filter_number === 0){
+          filter_number = 3;
+        }else{
+          filter_number = 0;
+        }
+        break;
+      case 11:
+        if(filter_number === 0){
+          filter_number = 4;
+        }else{
+          filter_number = 0;
+        }
+        break;
+      default:
+          console.log("Idk man..."+this.button_num);
+    }
+    if(this.button_num !== 1 && this.button_num !== 4){
+      console.log(this.button_num);
+      this.fill = "hsl(" + Math.random() * 360 + ", 50%, 50%)";
+    }
+    setTimeout(function(){
+      console.log(""+this);
+      console.log(""+button_num);
+      console.log(""+i);
+      settings_buttons[button_num] = "white";
+      canvas.redraw();
+      drawKeyLetters();
+    },300);
+  });
+  console.log("button made");
+}
+
+function playDrum(key){
+  if(key === drum_number){
+    source = audioContext.createBufferSource();
+    console.log(key+" : "+drum_buffers[key]);
+    source.buffer = drum_buffers[key];
+    source.connect(drumVolumeNode);
+    drumVolumeNode.connect(audioContext.destination);
+    source.start(0);
+  }
+}
+
+setInterval(function () {playDrum(1)}, 4634);
+setInterval(function () {playDrum(2)}, 6810);
+
+
 
 drawKeyLetters();
 

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="myCanvas" width="800" height="400" style="border:1px solid #c3c3c3;">
+Your browser does not support the HTML5 canvas tag.
+</canvas>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/ocanvas/2.7.3/ocanvas.min.js"></script>
+<script>
+
+var audioContext;
+var fireball;
+var gainNode;
+
+//Audio Section
+function play() {
+    //create a source node from the buffer
+    var src = audioContext.createBufferSource();
+    src.buffer = buf;
+    //connect to the final output node (the speakers)
+    src.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    //play immediately
+    src.noteOn(0);
+}
+
+//Audio Section
+function play2() {
+    //create a source node from the buffer
+    var src = audioContext.createBufferSource();
+    gainNode = audioContext.createGain();
+    src.buffer = fireball;
+    //connect to the final output node (the speakers)
+    src.connect(gainNode);
+    gainNode.gain.value = 0.5;
+    gainNode.connect(audioContext.destination);
+    //play immediately
+    src.noteOn(0);
+}
+
+//load and decode mp3 file
+function loadFile() {
+    var req = new XMLHttpRequest();
+    req.open("GET","smb_jump-small.wav",true);
+    req.responseType = "arraybuffer";
+    req.onload = function() {
+        //decode the loaded data
+        audioContext.decodeAudioData(req.response, function(buffer) {
+            buf = buffer;
+            play();
+        });
+    };
+    req.send();
+}
+
+//load and decode mp3 file
+function loadFile2() {
+    var req = new XMLHttpRequest();
+    req.open("GET","smb_fireball.wav",true);
+    req.responseType = "arraybuffer";
+    req.onload = function() {
+        //decode the loaded data
+        audioContext.decodeAudioData(req.response, function(buffer) {
+            buf = buffer;
+            fireball = buffer;
+            //play();
+            play2();
+        });
+    };
+    req.send();
+}
+
+
+//init the sound system
+function init() {
+    console.log("in init");
+    try {
+        audioContext =  new (window.AudioContext || window.webkitAudioContext)(); //is there a better API for this?
+        gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.5;
+        //loadFile();
+        loadFile2();
+    } catch(e) {
+        alert('you need webaudio support');
+    }
+}
+window.addEventListener('load',init,false);
+//Drawing the Canvas
+
+var c=document.getElementById("myCanvas");
+var ctx=c.getContext("2d");
+
+var canvas = oCanvas.create({
+  canvas: "#myCanvas",
+  fps: 60
+});
+
+function drawKeyLetters(){
+  ctx.font="20px Georgia";
+  for(i=0;i<15;i++){
+    if(i<5){
+      ctx.fillText(String.fromCharCode('C'.charCodeAt(0) + i).toString(),50*i+40,275);
+    }else if(i<12){
+      ctx.fillText(String.fromCharCode('A'.charCodeAt(0) + (i-5)).toString(),50*i+40,275);
+    }else{
+      ctx.fillText(String.fromCharCode('A'.charCodeAt(0) + (i-12)).toString(),50*i+40,275);
+    }
+  }
+}
+
+var buttons = [];
+
+for(i=0;i<15;i++){
+  var button = canvas.display.rectangle({
+    x: 50*i+50,
+    y: 0,
+    origin: { x: "center", y: "top" },
+    width: 50,
+    height: 300,
+    fill: "white",
+    stroke: "outside 5px rgba(0, 0, 0, 1)"
+  });
+  button.key_number = i;
+  canvas.addChild(button);
+  buttons.push(button);
+  //console.log(button);
+  button.bind("click tap",function(){
+    console.log("PLAY: "+this.key_number);
+    this.fill = "hsl(" + Math.random() * 360 + ", 50%, 50%)";
+    canvas.redraw();
+    drawKeyLetters()
+    var button = this;
+    play();
+    setTimeout(function(){
+      button.fill = "white";
+      canvas.redraw();
+      drawKeyLetters()
+    },300);
+  });
+}
+
+for(i=0;i<5;i++){
+
+var button = canvas.display.rectangle({
+  x: 75*(i+1),
+  y: 325,
+  origin: { x: "center", y: "top" },
+  width: 50,
+  height: 50,
+  fill: "white",
+  stroke: "outside 5px rgba(0, 0, 0, 1)"
+});
+button.key_number = i;
+canvas.addChild(button);
+buttons.push(button);
+//console.log(button);
+button.bind("click tap",function(){
+  console.log("PLAY: "+this.key_number);
+  this.fill = "hsl(" + Math.random() * 360 + ", 50%, 50%)";
+  canvas.redraw();
+  drawKeyLetters()
+  var button = this;
+  if(this.key_number === 0){
+    changePianoVolume(1.5);
+  }else if(this.key_number === 1){
+    changePianoVolume(0.5);
+  }else{
+    play();
+  }
+  setTimeout(function(){
+    button.fill = "white";
+    canvas.redraw();
+    drawKeyLetters()
+  },300);
+});
+}
+drawKeyLetters();
+
+</script>
+
+</body>
+</html>
