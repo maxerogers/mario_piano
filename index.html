@@ -97,8 +97,8 @@ function loadDrum(url,index) {
     req.send();
 }
 
-loadDrum("looperman-l-0262259-0047670-califken-mario-bros-level-14-beat.wav",1);
-loadDrum("mario_drum1.wav",2);
+loadDrum("new_drum1.wav",1);
+loadDrum("new_drum2.wav",2);
 
 
 function play(key){
@@ -110,26 +110,30 @@ function play(key){
     var filter = audioContext.createBiquadFilter();
     source.connect(filter);
     filter.connect(pianoVolumeNode);
-    filter.frequency.value = 200;
+    filter.frequency.value = 440;
     filter.type = 2;
   }else if(filter_number === 2){
     var filter = audioContext.createBiquadFilter();
     source.connect(filter);
     filter.connect(pianoVolumeNode);
-    filter.frequency.value = 200;
+    filter.frequency.value = 600;
     filter.type = 0;
   }else if(filter_number === 3){
     var filter = audioContext.createBiquadFilter();
     source.connect(filter);
     filter.connect(pianoVolumeNode);
-    filter.frequency.value = 200;
-    filter.type = 4;
+    filter.frequency.value = 500;
+    filter.type = 0;
+    filter.Q.value = 1000;
+    console.log(filter);
   }else if(filter_number === 4){
     var filter = audioContext.createBiquadFilter();
     source.connect(filter);
     filter.connect(pianoVolumeNode);
-    filter.frequency.value = 200;
-    filter.type = 5;
+    filter.frequency.value = 440;
+    filter.Q.value = 500;
+    filter.type = 1;
+    console.log("Worked");
   }
   pianoVolumeNode.connect(audioContext.destination);
   source.start(0);
@@ -169,7 +173,7 @@ index++;
 
 //Piano Keys from Keyboard
 window.onkeypress=function(e){
-  console.log(e.keyCode);
+  //console.log(e.keyCode);
   switch(e.keyCode){
     case 113:
       key_play(0);
@@ -241,10 +245,10 @@ function drawIcons(){
     var label_str = "";
     switch(i){
       case 6:
-        label_str = "D1";
+        label_str = "B1";
         break;
       case 7:
-        label_str = "D2";
+        label_str = "B2";
         break;
       case 8:
         label_str = "F1";
@@ -400,6 +404,10 @@ for(i=0;i<12;i++){
   button_num = i;
   canvas.addChild(button);
   button.bind("click tap",function(){
+    if(this.button_num !== 1 && this.button_num !== 4){
+      //console.log(this.button_num);
+      this.fill = "hsl(" + Math.random() * 360 + ", 50%, 50%)";
+    }
     switch(this.button_num){
       case 0:
         volumeUp();
@@ -418,6 +426,7 @@ for(i=0;i<12;i++){
           drum_number = 1;
         }else{
           drum_number = 0;
+          settings_buttons[6].fill = "white";
         }
         break;
       case 7:
@@ -425,6 +434,7 @@ for(i=0;i<12;i++){
           drum_number = 2;
         }else{
           drum_number = 0;
+          settings_buttons[7].fill = "white";
         }
         break;
       case 9:
@@ -432,6 +442,7 @@ for(i=0;i<12;i++){
           filter_number = 2;
         }else{
           filter_number = 0;
+          settings_buttons[9].fill = "white";
         }
         break;
       case 8:
@@ -439,6 +450,7 @@ for(i=0;i<12;i++){
           filter_number = 1;
         }else{
           filter_number = 0;
+          settings_buttons[8].fill = "white";
         }
         break;
       case 10:
@@ -446,6 +458,7 @@ for(i=0;i<12;i++){
           filter_number = 3;
         }else{
           filter_number = 0;
+          settings_buttons[10].fill = "white";
         }
         break;
       case 11:
@@ -453,31 +466,22 @@ for(i=0;i<12;i++){
           filter_number = 4;
         }else{
           filter_number = 0;
+          settings_buttons[11].fill = "white";
         }
         break;
       default:
           console.log("Idk man..."+this.button_num);
     }
-    if(this.button_num !== 1 && this.button_num !== 4){
-      console.log(this.button_num);
-      this.fill = "hsl(" + Math.random() * 360 + ", 50%, 50%)";
-    }
-    setTimeout(function(){
-      console.log(""+this);
-      console.log(""+button_num);
-      console.log(""+i);
-      settings_buttons[button_num] = "white";
-      canvas.redraw();
-      drawKeyLetters();
-    },300);
+    canvas.redraw();
+    drawKeyLetters();
   });
-  console.log("button made");
+  //console.log("button made");
 }
 
 function playDrum(key){
   if(key === drum_number){
     source = audioContext.createBufferSource();
-    console.log(key+" : "+drum_buffers[key]);
+    //console.log(key+" : "+drum_buffers[key]);
     source.buffer = drum_buffers[key];
     source.connect(drumVolumeNode);
     drumVolumeNode.connect(audioContext.destination);
@@ -485,8 +489,8 @@ function playDrum(key){
   }
 }
 
-setInterval(function () {playDrum(1)}, 4634);
-setInterval(function () {playDrum(2)}, 6810);
+setInterval(function () {playDrum(1)}, 1000);
+setInterval(function () {playDrum(2)}, 3000);
 
 
 
